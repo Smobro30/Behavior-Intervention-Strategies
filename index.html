@@ -1,0 +1,2312 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Search, 
+  ChevronDown, 
+  ChevronUp, 
+  ArrowLeft, 
+  ExternalLink, 
+  ArrowUp, 
+  Menu,
+  X,
+  BookOpen,
+  Users,
+  Activity,
+  Brain,
+  ShieldAlert,
+  GraduationCap
+} from 'lucide-react';
+
+// --- Configuration & Data ---
+
+const COLORS = {
+  primary: '#2C5F7D',
+  secondary: '#4A90A4',
+  accent: '#89C4D1',
+  sensory: '#9B59B6',
+  escape: '#E74C3C',
+  attention: '#F39C12',
+  tangible: '#27AE60',
+  bgLight: '#F8F9FA',
+  textDark: '#2C3E50',
+};
+
+// Comprehensive data derived from "4 Functions of Behavior Intervention Strategies (1).pdf"
+const BEHAVIOR_DATA = {
+  aggression: {
+    title: "💢 Aggression",
+    description: "Any instance of hitting, kicking, scratching, pinching adults or peers, instigating fights",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise their hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation.",
+        "Reduce emphasis on competition or limit participation in competitive activities."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  attendance: {
+    title: "📅 Attendance Issues",
+    description: "Frequent absences, 'ditching' class, recurrent tardies",
+    replacementBehaviors: {
+      sensory: [
+        "Let the teacher know when something is making them feel overwhelmed.",
+        "Ask for a snack.",
+        "Request to access and/or use available sensory supports (e.g., noise canceling headphones, fidget, alternative seating, weighted lap pad)."
+      ],
+      escape: [
+        "Ask for help.",
+        "Let the teacher know about a specific concern.",
+        "Request time with a teacher or counselor.",
+        "Seek out a trusted friend.",
+        "Work with a teacher and family member to develop other transportation options.",
+        "Ask for an acceptable alternative to class, setting, or responsibilities.",
+        "Request to take a break in a safe environment."
+      ],
+      attention: [
+        "Request counseling time.",
+        "Ask to work with a peer.",
+        "Request opportunity to lead a lesson, state opinion, share story with the class, help others, etc."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Organize assignments and class activities in a way that is easily tracked and understood.",
+        "Sit with the student daily or weekly to help with organization and planning.",
+        "Adjust the classroom environment to be less stimulating or overwhelming (e.g., change desk groupings, adjust lighting, monitor noise level, limit unnecessary smells)."
+      ],
+      escape: [
+        "Work with the student and family to establish a consistent plan for transportation to school.",
+        "Pair the student with a peer for walking to school or taking the bus.",
+        "Create a safe space for the student to take a break.",
+        "Preview schedule with trusted teacher/staff."
+      ],
+      attention: [
+        "Support the student in connecting with peers and developing friendships (e.g., pair for activities, peer mentors).",
+        "Teacher will greet all students at the beginning of each day/period.",
+        "Student to participate in a mentorship program with a preferred teacher/staff member.",
+        "Regular check-ins with preferred teacher/staff."
+      ],
+      tangible: [
+        "Provide healthy snacks for students to access if hungry.",
+        "Allow students to bring acceptable snacks to eat according to classroom rules."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Allow the student to access a quiet environment or preferred stimuli, for a set duration, upon arrival at school.",
+      escape: "Develop a behavior contract for attendance.",
+      attention: "Provide high-quality attention for attendance and/or timely arrival. Give awards/recognition for perfect attendance or high attendance (e.g., no more than 1 absence per quarter).",
+      tangible: "Allow the student to access a preferred item/activity, for a set duration, upon arrival at school. Provide a reward for an increase in attendance and/or timely arrival."
+    }
+  },
+  biting: {
+    title: "🦷 Biting",
+    description: "Placing teeth on self, others, or objects",
+    replacementBehaviors: {
+      sensory: [
+        "Request and/or independently access available sensory support(s).", 
+        "Request a snack or gum."
+      ],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).", 
+        "Ask for a break.", 
+        "Ask for a different activity or setting.", 
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.", 
+        "Ask to work or play with a peer.", 
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.", 
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide acceptable food items or chewy toys for oral sensory input.", 
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on a desk or wall, safely stretching through exercise or on play equipment).", 
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule.",
+        "Rule out medical needs."
+      ],
+      escape: [
+        "Provide space from other people in the environment.", 
+        "Reduce the number of peers in a group.", 
+        "Provide a designated break area.", 
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).", 
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.", 
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.", 
+        "Increase the frequency of praise/attention throughout the day.", 
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.", 
+        "Structure turn-taking by using visual supports or a timer.", 
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when a student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  defecating: {
+    title: "🚽 Defecating/Fecal Smearing",
+    description: "Defecating outside toilet or accessing feces and applying it to other surfaces, people, or self",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Ensure toileting needs are met (e.g., regular schedule for student to use the bathroom).",
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule.",
+        "Rule out medical needs."
+      ],
+      escape: [
+        "Ensure toileting needs are met (e.g., regular schedule for student to use the bathroom).",
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation.",
+        "Provide visual to facilitate student's independent requests to go to the bathroom."
+      ],
+      attention: [
+        "Ensure toileting needs are met (e.g., regular schedule for student to use the bathroom).",
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Ensure toileting needs are met (e.g., regular schedule for student to use the bathroom).",
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  organizing: {
+    title: "📚 Difficulty Organizing",
+    description: "Does not bring, store, or care for materials such as books, papers, writing instruments to class",
+    replacementBehaviors: {
+      sensory: [
+        "Communicate needs or concerns with the teacher.",
+        "Utilize available tools to support organization.",
+        "Organize and store materials in an alternate location within the classroom.",
+        "Utilize a rolling cart/bag to transport materials throughout the day."
+      ],
+      escape: [
+        "Ask the teacher for help.",
+        "Use a checklist as a reminder to come prepared with necessary materials.",
+        "Ask the teacher for an extra set of materials."
+      ],
+      attention: [
+        "Ask for an opportunity to share work with the class.",
+        "Ask a peer for help organizing.",
+        "Ask the teacher for help.",
+        "Offer to share materials with others."
+      ],
+      tangible: [
+        "Communicate needs or concerns with the teacher.",
+        "Ask the teacher for alternate materials if available."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule.",
+        "Provide choices of materials, when possible."
+      ],
+      escape: [
+        "Provide visual support to facilitate organization or care of materials.",
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Provide visual support to facilitate organization or care of materials.",
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Provide visual support to facilitate organization or care of materials.",
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  dishonest: {
+    title: "🤥 Dishonesty",
+    description: "Not telling the truth to adults or peers",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Use interesting conversation starters to engage a peer.",
+        "Tell positive stories about self to a peer or adult.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity.",
+        "Provide a list of sentence starters or topics to engage with peers."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request. Keep behavior chart and provide reward.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  disrespect: {
+    title: "😤 Disrespect",
+    description: "Engaging in words or actions that do not convey respect toward others",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  disruption: {
+    title: "🔊 Disruption",
+    description: "Behavior that interrupts learning, instruction, or engagement for the student and/or others",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  drops: {
+    title: "⬇️ Drops to Ground",
+    description: "Drops to ground when asked to do something or go somewhere",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate.",
+        "Requests for one more minute or additional time."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  'inappropriate-interactions': {
+    title: "👥 Inappropriate Interactions",
+    description: "Inappropriate social interactions such as touching private areas, invasion of person space, interrupting, off-topic or derogatory comments",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed.",
+        "Use sentence starters to initiate interactions with peers.",
+        "Use problem-solving visual/list to appropriately respond to conflict with peers or adults."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible.",
+        "Follow a 'recess plan' to structure engagement and plan access to activities during unstructured leisure time."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  touching: {
+    title: "🤚 Inappropriate Personal Touching",
+    description: "Any sexual self-stimulating behavior including touching private parts, putting hands in pants, thrusting hips toward an object or the ground",
+    replacementBehaviors: {
+      sensory: [
+        "Request and/or independently access available sensory support(s).",
+        "Engage in the behavior in a designated private location."
+      ],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment)."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  verbalization: {
+    title: "🗣️ Inappropriate Verbalization",
+    description: "Swearing, derogatory statements, sexually provocative language, or an outburst which feels threatening to the listener",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  'incomplete-work': {
+    title: "📝 Incomplete Work/Off-Task",
+    description: "Does not stay focused on or complete a given task within the time allotted, does not participate in classroom activities and discussions, and/or does not engage in or complete tasks of which he/she is capable",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed.",
+        "Asks clarifying questions to increase understanding of the instruction or assignment."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  mouthing: {
+    title: "👄 Mouthing Non-edibles",
+    description: "Placing a non-edible item in mouth or swallowing non-edible item",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule.",
+        "Rule out medical needs."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  noncompliance: {
+    title: "🚫 Non-compliance",
+    description: "Refusing, either verbally or non-verbally, to follow a given instruction or request from a teacher or other staff member",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Use behavior momentum to increase engagement with request or instruction (e.g., start with a preferred activity and then gradually transition to novel or less-preferred tasks).",
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  property: {
+    title: "💥 Property Destruction",
+    description: "Misuse of property that results in damage, throwing objects, hitting or kicking objects",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule.",
+        "Provide clear and concise behavioral expectations for each new environment."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Have peers demonstrate handling property with care.",
+        "Provide praise and attention when student appropriately handles items with care.",
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  transitions: {
+    title: "🔄 Resists Transitions",
+    description: "Engages in problem behavior when asked to stop one task and go to a different location or begin a different task",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Request to transition at a different time than peers.",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule.",
+        "Use a visual schedule to indicate an upcoming transition."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Pair the non-preferred environment with preferred activity or people (e.g., have the student go to the non-preferred environment to get a special candy from the teacher in that room).",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Use a visual schedule to indicate when access to item/person/activity is appropriate.",
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  'self-injury': {
+    title: "🤕 Self-Injury",
+    description: "Student in engages in behavior that may result in harm to self, such as hitting head against a hard surface or pinching/hitting self",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule.",
+        "Rule out medical needs."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  spitting: {
+    title: "💦 Spitting",
+    description: "Projecting saliva or food items from the mouth",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule.",
+        "Rule out medical needs."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  stealing: {
+    title: "🕵️ Stealing",
+    description: "Taking something that belongs to someone else without the owner's permission or presenting another's work as one's own",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  'talking-out': {
+    title: "🗨️ Talking Out",
+    description: "Talking out of turn during class time, may be on or off-topic",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  throwing: {
+    title: "⚾ Throwing Objects",
+    description: "Projecting an object from the hand, whether aimed at another person or not",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule.",
+        "Provide space from other people in the environment."
+      ],
+      escape: [
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  wandering: {
+    title: "🚶 Wandering/Exiting",
+    description: "Getting out of seat, leaving desk, leaving classroom or designated area without permission",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule.",
+        "Provide space from other people in the environment."
+      ],
+      escape: [
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  },
+  withdrawn: {
+    title: "😶 Withdrawn/Disengaged",
+    description: "Refuses to talk or engage in classroom discussion or activities",
+    replacementBehaviors: {
+      sensory: ["Request and/or independently access available sensory support(s)."],
+      escape: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc. (e.g., ask for help, request to do something different).",
+        "Ask for a break.",
+        "Ask for a different activity or setting.",
+        "Use strategies to cope in difficult situations that mediate the need to escape.",
+        "Request to talk to a trusted adult (e.g., counselor), if appropriate."
+      ],
+      attention: [
+        "Request to share work/item with the class.",
+        "Ask to work or play with a peer.",
+        "Raise hand to gain the teacher's attention.",
+        "Request to help other students once their own work is completed."
+      ],
+      tangible: [
+        "Communicate wants/needs using appropriate words, pictures, signals, etc.",
+        "Select an alternative activity while waiting for a turn."
+      ]
+    },
+    antecedentStrategies: {
+      sensory: [
+        "Provide access to sensory supports that provide input to meet needs.",
+        "Provide varied sensory activities (e.g., running, carrying an item, using a weighted lap pad, doing push-ups on desk or wall, safely stretching through exercise or on play equipment).",
+        "Collaborate with parents/guardians regarding nutrition, snack options at school, and/or eating schedule."
+      ],
+      escape: [
+        "Provide space from other people in the environment.",
+        "Reduce the number of peers in a group.",
+        "Provide a designated break area.",
+        "Reduce the response effort of a task (e.g., change the level of the task or the number of items to be completed).",
+        "Provide opportunities for the student to take scheduled breaks throughout the day.",
+        "Provide additional help/support during difficult tasks or situations.",
+        "Adjust the environment to reduce the student's need to escape the task or situation."
+      ],
+      attention: [
+        "Supervise play with peers to prompt appropriate social interactions and positive peer attention.",
+        "Provide structured social interactions to help the student get involved in preferred activity or play with a preferred peer.",
+        "Increase the frequency of praise/attention throughout the day.",
+        "Provide opportunities for individual attention/interaction with preferred staff or a peer.",
+        "Provide opportunities for the student to lead or help others during a task/activity."
+      ],
+      tangible: [
+        "Communicate with parents/guardians about supplying desired items.",
+        "Provide access to desired items when appropriate throughout the day.",
+        "Structure turn-taking by using visual supports or a timer.",
+        "Provide a visual of the steps for making a share request.",
+        "Provide opportunities to make choices/have control when possible."
+      ]
+    },
+    responseStrategies: {
+      sensory: "Provide access to sensory supports/activities upon request.",
+      escape: "Provide access to escape from the task, activity, person, or situation upon request.",
+      attention: "Provide high-quality attention and behavior-specific praise when the student engages in appropriate replacement behavior specific to the needs and preference of the student.",
+      tangible: "Provide access to the requested item, activity, person, etc."
+    }
+  }
+};
+
+const ALL_BEHAVIORS = [
+  { id: 'aggression', title: '💢 Aggression', desc: 'Hitting, kicking, scratching, pinching, instigating fights' },
+  { id: 'attendance', title: '📅 Attendance Issues', desc: 'Frequent absences, "ditching" class, recurrent tardies' },
+  { id: 'biting', title: '🦷 Biting', desc: 'Placing teeth on self, others, or objects' },
+  { id: 'defecating', title: '🚽 Defecating/Fecal Smearing', desc: 'Defecating outside toilet, fecal smearing' },
+  { id: 'organizing', title: '📚 Difficulty Organizing', desc: 'Not bringing, storing, or caring for materials' },
+  { id: 'dishonest', title: '🤥 Dishonesty', desc: 'Not telling the truth to adults or peers' },
+  { id: 'disrespect', title: '😤 Disrespect', desc: 'Disrespectful language or actions toward others' },
+  { id: 'disruption', title: '🔊 Disruption', desc: 'Interrupting instruction or activities' },
+  { id: 'drops', title: '⬇️ Drops to Ground', desc: 'Dropping body to floor/ground' },
+  { id: 'inappropriate-interactions', title: '👥 Inappropriate Interactions', desc: 'Inappropriate interactions with peers/adults' },
+  { id: 'touching', title: '🤚 Inappropriate Personal Touching', desc: 'Touching others inappropriately' },
+  { id: 'verbalization', title: '🗣️ Inappropriate Verbalization', desc: 'Inappropriate language or verbalizations' },
+  { id: 'incomplete-work', title: '📝 Incomplete Work/Off-Task', desc: 'Not completing work, off-task behavior' },
+  { id: 'mouthing', title: '👄 Mouthing Non-edibles', desc: 'Mouthing or consuming non-edible items' },
+  { id: 'noncompliance', title: '🚫 Non-compliance', desc: 'Refusing to follow directions' },
+  { id: 'property', title: '💥 Property Destruction', desc: 'Breaking or destroying property' },
+  { id: 'transitions', title: '🔄 Resists Transitions', desc: 'Difficulty with transitions between classes/activities' },
+  { id: 'self-injury', title: '🤕 Self-Injury', desc: 'Harming self intentionally' },
+  { id: 'spitting', title: '💦 Spitting', desc: 'Spitting at others or in environment' },
+  { id: 'stealing', title: '🕵️ Stealing', desc: 'Taking others\' property without permission' },
+  { id: 'talking-out', title: '🗨️ Talking Out', desc: 'Speaking without permission' },
+  { id: 'throwing', title: '⚾ Throwing Objects', desc: 'Throwing items inappropriately' },
+  { id: 'wandering', title: '🚶 Wandering/Exiting', desc: 'Leaving designated area without permission' },
+  { id: 'withdrawn', title: '😶 Withdrawn/Disengaged', desc: 'Social withdrawal or disengagement' }
+];
+
+const UNIVERSAL_STRATEGIES = [
+  {
+    title: "🏫 School Engagement & Connection",
+    items: [
+      "Encourage participation in school sports and other extracurricular activities",
+      "Give opportunities for leadership responsibilities",
+      "Give opportunities to complete important jobs",
+      "Give opportunities to show off good work",
+      "Schedule lunch time with the principal",
+      "Showcase student strengths in group learning situations",
+      "Survey or interview to determine interests, and then use those to increase motivation and participation",
+      "Pair with older or younger students for structured activity, with emphasis on social skills"
+    ]
+  },
+  {
+    title: "👨‍👩‍👧 Communication & Collaboration",
+    items: [
+      "Establish regular teacher-parent communication (e.g., email, log, home or school contract, weekly progress report)",
+      "Help parent/caregiver set up a home reward/management system",
+      "Invite parent/caregiver to visit or spend time in the classroom",
+      "Introduce school support staff (e.g., counselor, nurse, psychologist)",
+      "Utilize site-team support (e.g., principal, teacher, psychologist, counselor, social worker)",
+      "Work cooperatively to create group expectations"
+    ]
+  },
+  {
+    title: "📚 Instructional Practices",
+    items: [
+      "Provide assignments that match instructional level",
+      "Match learning tasks with learning style strengths",
+      "Use creative formats to engage students in learning",
+      "Use high-interest activities",
+      "Use music to help class focus during independent work activities",
+      "Offer choices of ways to perform work",
+      "Incorporate frequent opportunities for movement",
+      "Move seat to the optimal learning location"
+    ]
+  },
+  {
+    title: "✨ Positive Reinforcement & Recognition",
+    items: [
+      "Praise others for appropriate behavior",
+      "Immediately recognize positive behaviors",
+      "Implement reinforcers in the classroom and home",
+      "Ignore low-level problem behavior when possible",
+      "Model positive thinking and attribution statements",
+      "Provide frequent breaks for relaxation or small talk"
+    ]
+  },
+  {
+    title: "🎯 Explicit Teaching & Skill Development",
+    items: [
+      "Post, model, and practice expected behavior",
+      "Post visual supports to clarify student expectations and prepare for transitions",
+      "Have a peer model appropriate behavior",
+      "Role-play social situations",
+      "Teach and pre-correct the student to use words, not aggression",
+      "Teach effective learning behavior (e.g., eyes on teacher, working to completion)",
+      "Teach how to identify feelings",
+      "Teach how to set short-term daily goals",
+      "Teach relaxation techniques",
+      "Teach self-monitoring and self-management skills"
+    ]
+  },
+  {
+    title: "🔄 Proactive Strategies",
+    items: [
+      "Establish non-verbal signals between teacher and student",
+      "Use 'wait time' after giving a request to avoid a power struggle",
+      "Organize playground activities and passing periods to reduce fighting or inappropriate behavior"
+    ]
+  }
+];
+
+const EVIDENCE_BASED_PRACTICES = [
+  { name: "Antecedent-based Interventions", desc: "Modifying the environment or situation before problem behavior occurs.", link: "https://afirm.fpg.unc.edu/antecedent-based-intervention" },
+  { name: "Naturalistic Intervention", desc: "Teaching skills during naturally occurring activities and routines.", link: "https://afirm.fpg.unc.edu/naturalistic-intervention" },
+  { name: "Visual Supports", desc: "Using visual aids to clarify expectations and support understanding.", link: "https://afirm.fpg.unc.edu/visual-supports" },
+  { name: "Self-Management", desc: "Teaching students to monitor and regulate their own behavior.", link: "https://afirm.fpg.unc.edu/self-management" },
+  { name: "Reinforcement", desc: "Providing consequences that increase desired behaviors.", link: "https://afirm.fpg.unc.edu/reinforcement" },
+  { name: "Functional Communication Training", desc: "Teaching appropriate communication to replace problem behavior.", link: "https://afirm.fpg.unc.edu/functional-communication-training" },
+  { name: "Differential Reinforcement", desc: "Reinforcing appropriate behavior while withholding reinforcement for problem behavior.", link: "https://afirm.fpg.unc.edu/differential-reinforcement" },
+  { name: "Social Skills Training", desc: "Explicit instruction in social interaction skills.", link: "https://afirm.fpg.unc.edu/social-skills-training" }
+];
+
+// --- Components ---
+
+const AccordionItem = ({ title, children, isOpen, onClick }) => {
+  return (
+    <div className="border border-slate-200 rounded-lg mb-4 overflow-hidden shadow-sm bg-white">
+      <button 
+        className="w-full flex justify-between items-center p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+        onClick={onClick}
+      >
+        <span className="font-semibold text-slate-800 text-lg">{title}</span>
+        {isOpen ? <ChevronUp className="text-slate-500" /> : <ChevronDown className="text-slate-500" />}
+      </button>
+      <div 
+        className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}
+      >
+        <div className="p-6 border-t border-slate-200">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const BehaviorCard = ({ title, desc, onClick }) => (
+  <div 
+    onClick={onClick}
+    className="bg-white rounded-lg p-6 shadow-md border-2 border-slate-100 hover:border-[#2C5F7D] hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group h-full flex flex-col"
+  >
+    <h4 className="text-lg font-bold text-[#2C5F7D] mb-2 group-hover:text-[#4A90A4]">{title}</h4>
+    <p className="text-slate-600 text-sm flex-grow">{desc}</p>
+    <div className="mt-4 text-[#4A90A4] text-xs font-semibold uppercase tracking-wider flex items-center gap-1">
+      View Strategies <ExternalLink size={12} />
+    </div>
+  </div>
+);
+
+const FunctionCard = ({ type, title, subtitle, desc, examples, question }) => {
+  const styles = {
+    sensory: { bg: 'bg-purple-100', border: 'border-purple-500', text: 'text-purple-900', icon: '🌟' },
+    escape: { bg: 'bg-red-100', border: 'border-red-500', text: 'text-red-900', icon: '🚪' },
+    attention: { bg: 'bg-orange-100', border: 'border-orange-500', text: 'text-orange-900', icon: '👥' },
+    tangible: { bg: 'bg-green-100', border: 'border-green-500', text: 'text-green-900', icon: '🎁' }
+  };
+
+  const style = styles[type];
+
+  return (
+    <div className={`rounded-xl overflow-hidden shadow-lg border-t-4 ${style.border} bg-white h-full flex flex-col`}>
+      <div className={`p-6 ${style.bg}`}>
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-3xl">{style.icon}</span>
+          <h3 className={`text-2xl font-bold ${style.text}`}>{title}</h3>
+        </div>
+        <h4 className={`text-sm font-bold uppercase opacity-75 ${style.text}`}>{subtitle}</h4>
+      </div>
+      <div className="p-6 flex-grow flex flex-col gap-4">
+        <p className="text-slate-700">{desc}</p>
+        <div>
+          <strong className="block text-slate-900 mb-2">Examples:</strong>
+          <ul className="list-disc pl-5 space-y-1 text-slate-600 text-sm">
+            {examples.map((ex, i) => <li key={i}>{ex}</li>)}
+          </ul>
+        </div>
+        <div className="mt-auto pt-4 border-t border-slate-100">
+          <p className="text-sm italic text-slate-500"><strong>Key Question:</strong> {question}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const FunctionDetailSection = ({ type, title, icon, colorClass, items }) => (
+  <div className={`border-l-4 ${colorClass} pl-6 py-2 my-6 bg-slate-50 rounded-r-lg`}>
+    <h4 className={`font-bold text-lg mb-3 flex items-center gap-2 ${colorClass.replace('border-', 'text-')}`}>
+      {icon} {title}
+    </h4>
+    {Array.isArray(items) ? (
+      <ul className="list-disc pl-5 space-y-2 text-slate-700">
+        {items.map((item, idx) => <li key={idx}>{item}</li>)}
+      </ul>
+    ) : (
+      <p className="text-slate-700">{items}</p>
+    )}
+  </div>
+);
+
+const DetailView = ({ behavior, onClose }) => {
+  const isGeneric = !BEHAVIOR_DATA[behavior.id];
+  const data = BEHAVIOR_DATA[behavior.id] || behavior;
+
+  return (
+    <div className="animate-fade-in">
+      <button 
+        onClick={onClose}
+        className="mb-6 flex items-center gap-2 text-[#4A90A4] font-semibold hover:text-[#2C5F7D] transition-colors"
+      >
+        <ArrowLeft size={20} /> Back to Behavior List
+      </button>
+
+      <div className="bg-white rounded-xl shadow-lg p-8 border border-slate-200">
+        <h2 className="text-3xl font-bold text-[#2C5F7D] mb-2">{data.title}</h2>
+        <p className="text-xl text-slate-600 italic mb-8 border-b pb-4">{data.description || data.desc}</p>
+
+        {isGeneric ? (
+            <div className="space-y-8">
+               <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                  <h3 className="text-blue-800 font-bold text-lg">Comprehensive Intervention Framework</h3>
+                  <p className="text-blue-700">For this behavior, follow the standard intervention process. A comprehensive Behavior Intervention Plan should include strategies matched to the function of the behavior.</p>
+               </div>
+               
+               {/* ... existing generic blocks ... */}
+               <div className="grid md:grid-cols-2 gap-6">
+                 <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
+                   <h4 className="text-purple-800 font-bold mb-2">🌟 If Function is SENSORY</h4>
+                   <p className="text-slate-700">Teach the student to request and/or independently access appropriate sensory supports that meet the same sensory need.</p>
+                 </div>
+                 <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                   <h4 className="text-red-800 font-bold mb-2">🚪 If Function is ESCAPE</h4>
+                   <p className="text-slate-700">Teach the student to appropriately request help, breaks, modifications, or to communicate discomfort with the task/situation.</p>
+                 </div>
+                 <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
+                   <h4 className="text-orange-800 font-bold mb-2">👥 If Function is ATTENTION</h4>
+                   <p className="text-slate-700">Teach the student to appropriately request attention from peers or adults through socially acceptable means.</p>
+                 </div>
+                 <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                   <h4 className="text-green-800 font-bold mb-2">🎁 If Function is TANGIBLE</h4>
+                   <p className="text-slate-700">Teach the student to appropriately request desired items/activities and to wait or select alternatives.</p>
+                 </div>
+               </div>
+               
+               {/* ... existing generic core strategies ... */}
+            </div>
+        ) : (
+          <>
+            {/* 1. Replacement Behaviors */}
+            <h3 className="text-2xl font-bold text-slate-800 mb-6 bg-slate-100 p-3 rounded-lg inline-block">1. Replacement Behavior – The student will…</h3>
+            <FunctionDetailSection type="sensory" title="Sensory" icon="🌟" colorClass="border-purple-500 text-purple-700" items={data.replacementBehaviors.sensory} />
+            <FunctionDetailSection type="escape" title="Escape" icon="🚪" colorClass="border-red-500 text-red-700" items={data.replacementBehaviors.escape} />
+            <FunctionDetailSection type="attention" title="Attention" icon="👥" colorClass="border-orange-500 text-orange-700" items={data.replacementBehaviors.attention} />
+            <FunctionDetailSection type="tangible" title="Tangible" icon="🎁" colorClass="border-green-500 text-green-700" items={data.replacementBehaviors.tangible} />
+
+            {/* 2. Antecedent Strategies */}
+            <h3 className="text-2xl font-bold text-slate-800 mt-12 mb-6 bg-slate-100 p-3 rounded-lg inline-block">2. Antecedent-based Strategies (Prevention)</h3>
+            <FunctionDetailSection type="sensory" title="Sensory" icon="🌟" colorClass="border-purple-500 text-purple-700" items={data.antecedentStrategies.sensory} />
+            <FunctionDetailSection type="escape" title="Escape" icon="🚪" colorClass="border-red-500 text-red-700" items={data.antecedentStrategies.escape} />
+            <FunctionDetailSection type="attention" title="Attention" icon="👥" colorClass="border-orange-500 text-orange-700" items={data.antecedentStrategies.attention} />
+            <FunctionDetailSection type="tangible" title="Tangible" icon="🎁" colorClass="border-green-500 text-green-700" items={data.antecedentStrategies.tangible} />
+
+            {/* 3. Teaching Strategies (Standard Text) */}
+            <h3 className="text-2xl font-bold text-slate-800 mt-12 mb-6 bg-slate-100 p-3 rounded-lg inline-block">3. Strategies for Teaching or Increasing Replacement Behavior</h3>
+            <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-[#2C5F7D] space-y-4">
+              <div>
+                <strong className="text-[#2C5F7D] block mb-2">If the student already uses the replacement behavior, but uses it inconsistently or inappropriately:</strong>
+                <ul className="list-disc pl-5 text-slate-700 space-y-1">
+                  <li>Develop and implement a contract with the student to reinforce the skill.</li>
+                  <li>Reinforce the student for attempts to use the skill.</li>
+                  <li>Reinforce the student for increased use of the skill.</li>
+                  <li>Prompt the student to use the skill more often.</li>
+                </ul>
+              </div>
+              <div className="pt-4 border-t border-blue-200">
+                <strong className="text-[#2C5F7D] block mb-2">If the student does not demonstrate the replacement behavior:</strong>
+                <ul className="list-disc pl-5 text-slate-700 space-y-1">
+                  <li>Teach, model, practice, and reinforce the replacement behavior in the school setting regularly (daily/weekly) or as a whole class lesson.</li>
+                  <li>Hold weekly individual or small group sessions for modeling, role play, and practice.</li>
+                  <li>Provide individual counseling by a qualified professional to address skill acquisition.</li>
+                  <li>Model and practice desired skills using mentoring.</li>
+                  <li>Provide explicit instruction specific to skill deficits; model the skill and provide practice with feedback.</li>
+                  <li>Teach available accommodations and how to request them (e.g., using text or pictures).</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* 4. Response Strategies */}
+            <h3 className="text-2xl font-bold text-slate-800 mt-12 mb-6 bg-slate-100 p-3 rounded-lg inline-block">4. Response Strategies to Increase Replacement Behavior</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+               <FunctionDetailSection type="sensory" title="Sensory" icon="🌟" colorClass="border-purple-500 text-purple-700" items={data.responseStrategies.sensory} />
+               <FunctionDetailSection type="escape" title="Escape" icon="🚪" colorClass="border-red-500 text-red-700" items={data.responseStrategies.escape} />
+               <FunctionDetailSection type="attention" title="Attention" icon="👥" colorClass="border-orange-500 text-orange-700" items={data.responseStrategies.attention} />
+               <FunctionDetailSection type="tangible" title="Tangible" icon="🎁" colorClass="border-green-500 text-green-700" items={data.responseStrategies.tangible} />
+            </div>
+
+            {/* 5. Plan to Respond to Problem Behavior (Standard Text) */}
+            <h3 className="text-2xl font-bold text-slate-800 mt-12 mb-6 bg-slate-100 p-3 rounded-lg inline-block">5. Plan to Respond to Problem Behavior</h3>
+            <div className="bg-red-50 p-6 rounded-lg border-l-4 border-red-500">
+              <ul className="list-disc pl-5 text-slate-800 font-medium space-y-2">
+                <li>Minimize attention to the problem behavior.</li>
+                <li>Maintain a calm/neutral voice tone and body language.</li>
+                <li>Prompt the student to engage in the replacement behavior.</li>
+              </ul>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- Main App Component ---
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('home');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedBehavior, setSelectedBehavior] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [expandedAccordion, setExpandedAccordion] = useState(null);
+
+  const tabs = [
+    { id: 'home', label: 'Home', icon: <BookOpen size={18} /> },
+    { id: 'tiers', label: 'PBIS Tiers', icon: <Activity size={18} /> },
+    { id: 'functions', label: '4 Functions', icon: <Brain size={18} /> },
+    { id: 'universal', label: 'Universal Strategies', icon: <Users size={18} /> },
+    { id: 'function-based', label: 'Function-Based', icon: <GraduationCap size={18} /> },
+    { id: 'behaviors', label: 'Problem Behaviors', icon: <ShieldAlert size={18} /> },
+    { id: 'evidence', label: 'Evidence-Based', icon: <ExternalLink size={18} /> },
+  ];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const filteredBehaviors = ALL_BEHAVIORS.filter(b => 
+    b.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    b.desc.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'home':
+        return (
+          <div className="animate-fade-in space-y-8">
+            <div className="bg-blue-50 border-l-4 border-[#2C5F7D] p-6 rounded-r-lg shadow-sm">
+              <h2 className="text-2xl font-bold text-[#2C5F7D] mb-3">Welcome to the BIS Tool</h2>
+              <p className="text-slate-700 leading-relaxed">
+                The purpose of this document is to serve as a guide to teams across the tiers of behavior support. 
+                The strategies and interventions provided are intended to offer ideas and examples; ultimately it is up to each team 
+                (e.g., Tier 3 student-level team, 504 team, IEP team) to determine what strategies and interventions may be most effective for each student.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 text-white text-center">
+              <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl shadow-lg transform transition hover:scale-105">
+                <h3 className="text-2xl font-bold mb-2">TIER 1</h3>
+                <p className="opacity-90">Universal proactive supports for ALL students</p>
+              </div>
+              <div className="bg-gradient-to-br from-yellow-500 to-orange-500 p-6 rounded-xl shadow-lg transform transition hover:scale-105">
+                <h3 className="text-2xl font-bold mb-2">TIER 2</h3>
+                <p className="opacity-90">Targeted intervention for SOME students</p>
+              </div>
+              <div className="bg-gradient-to-br from-red-500 to-red-600 p-6 rounded-xl shadow-lg transform transition hover:scale-105">
+                <h3 className="text-2xl font-bold mb-2">TIER 3</h3>
+                <p className="opacity-90">Intensive individualized intervention for A FEW students</p>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+              <h3 className="text-xl font-bold text-[#2C5F7D] mb-4">How to Use This Tool</h3>
+              <ol className="list-decimal pl-6 space-y-3 text-slate-700">
+                <li><strong>Start with Universal Strategies</strong> - Implement Tier 1 supports for all students</li>
+                <li><strong>Identify the Function</strong> - Determine what the behavior is communicating</li>
+                <li><strong>Select Function-Based Strategies</strong> - Apply Tier 2 targeted interventions</li>
+                <li><strong>Conduct FBA/BIP</strong> - For persistent behaviors, complete a comprehensive assessment and plan</li>
+                <li><strong>Monitor and Adjust</strong> - Collect data and modify strategies as needed</li>
+              </ol>
+            </div>
+          </div>
+        );
+
+      case 'tiers':
+        return (
+          <div className="animate-fade-in space-y-10">
+            <h2 className="text-3xl font-bold text-[#2C5F7D] pb-2 border-b-4 border-[#89C4D1]">PBIS Three-Tiered Model</h2>
+            
+            <div className="space-y-8">
+              <div className="bg-white rounded-xl shadow-md overflow-hidden border-l-8 border-green-500">
+                <div className="bg-green-50 p-6">
+                  <h3 className="text-2xl font-bold text-green-800">Tier 1: Universal Supports</h3>
+                  <p className="text-green-700 font-medium">Target: All Students (80-90%)</p>
+                </div>
+                <div className="p-6">
+                  <p className="mb-4 text-slate-700">Goal: Prevent problem behavior by establishing clear expectations and teaching appropriate behavior to all students.</p>
+                  <ul className="grid md:grid-cols-2 gap-2">
+                    {['Schoolwide expectations defined & taught', 'Positive reinforcement systems', 'Data-based decision making', 'Proactive classroom management'].map((item, i) => (
+                      <li key={i} className="flex items-center gap-2 text-slate-600"><div className="w-2 h-2 rounded-full bg-green-500"></div>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-md overflow-hidden border-l-8 border-yellow-500">
+                <div className="bg-yellow-50 p-6">
+                  <h3 className="text-2xl font-bold text-yellow-800">Tier 2: Targeted Supports</h3>
+                  <p className="text-yellow-700 font-medium">Target: Some Students at Risk (5-15%)</p>
+                </div>
+                <div className="p-6">
+                  <p className="mb-4 text-slate-700">Goal: Provide additional support for students who need more than universal interventions but don't require intensive individualized plans.</p>
+                  <ul className="grid md:grid-cols-2 gap-2">
+                    {['Evidence-based group interventions', 'Check-In Check-Out', 'Social skills groups', 'Increased monitoring & data collection'].map((item, i) => (
+                      <li key={i} className="flex items-center gap-2 text-slate-600"><div className="w-2 h-2 rounded-full bg-yellow-500"></div>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-md overflow-hidden border-l-8 border-red-500">
+                <div className="bg-red-50 p-6">
+                  <h3 className="text-2xl font-bold text-red-800">Tier 3: Intensive Individualized Supports</h3>
+                  <p className="text-red-700 font-medium">Target: Few Students with Intensive Needs (1-5%)</p>
+                </div>
+                <div className="p-6">
+                  <p className="mb-4 text-slate-700">Goal: Provide comprehensive, individualized interventions based on functional behavior assessment.</p>
+                  <ul className="grid md:grid-cols-2 gap-2">
+                    {['Functional Behavior Assessment (FBA)', 'Behavior Intervention Plan (BIP)', 'Wraparound supports', 'Crisis prevention plans'].map((item, i) => (
+                      <li key={i} className="flex items-center gap-2 text-slate-600"><div className="w-2 h-2 rounded-full bg-red-500"></div>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'functions':
+        return (
+          <div className="animate-fade-in space-y-8">
+            <h2 className="text-3xl font-bold text-[#2C5F7D] pb-2 border-b-4 border-[#89C4D1]">The Four Functions of Behavior</h2>
+            <p className="text-slate-700 text-lg">Understanding the <strong>function</strong> (or purpose) of a behavior is essential. All behavior serves a purpose - it communicates a need or achieves a goal.</p>
+            
+            <div className="grid xl:grid-cols-2 gap-6">
+              <FunctionCard 
+                type="sensory" 
+                title="Sensory" 
+                subtitle="Automatic Reinforcement"
+                desc="The behavior provides sensory stimulation or removes unpleasant sensory experiences. The reinforcement is internal/automatic."
+                examples={['Rocking, spinning, hand-flapping', 'Covering ears in loud environment', 'The behavior feels good internally']}
+                question="Does the behavior occur even when no one is around?"
+              />
+              <FunctionCard 
+                type="escape" 
+                title="Escape" 
+                subtitle="Negative Reinforcement"
+                desc="The behavior allows the student to escape or avoid something unpleasant (task, person, activity, situation)."
+                examples={['Refusal behaviors during difficult tasks', 'Acting out to be removed from class', 'Withdrawal to avoid social situations']}
+                question="Does the behavior result in the student getting out of something?"
+              />
+              <FunctionCard 
+                type="attention" 
+                title="Attention" 
+                subtitle="Social Positive Reinforcement"
+                desc="The behavior gains attention from peers, adults, or both. Any attention (positive or negative) reinforces the behavior."
+                examples={['Calling out to get teacher response', 'Aggression that prompts peer reactions', 'Class clown behaviors']}
+                question="Does the behavior result in social interaction or reaction from others?"
+              />
+              <FunctionCard 
+                type="tangible" 
+                title="Tangible" 
+                subtitle="Tangible Positive Reinforcement"
+                desc="The behavior allows the student to gain access to desired items, activities, or privileges."
+                examples={['Taking items from peers', 'Tantrum to get preferred toy', 'Breaking rules to access restricted activities']}
+                question="Does the behavior result in getting a desired object or activity?"
+              />
+            </div>
+
+            <div className="bg-green-50 border-l-4 border-green-500 p-6 rounded-r-lg mt-8">
+               <h3 className="text-green-800 font-bold text-xl mb-2">Golden Rule of Function-Based Intervention</h3>
+               <p className="text-green-700">The replacement behavior must be more effective than the problem behavior at meeting the student's need. It should be <strong>better</strong> (more appropriate), <strong>faster</strong> (gets need met quicker), and <strong>stronger</strong> (consistent results).</p>
+            </div>
+          </div>
+        );
+
+      case 'universal':
+        return (
+          <div className="animate-fade-in space-y-6">
+            <h2 className="text-3xl font-bold text-[#2C5F7D] pb-2 border-b-4 border-[#89C4D1]">Universal Strategies (Tier 1)</h2>
+            <p className="text-slate-700 mb-4">These proactive, preventative approaches are suitable for all students and can be implemented immediately.</p>
+            
+            <div className="space-y-4">
+              {UNIVERSAL_STRATEGIES.map((section, idx) => (
+                <AccordionItem 
+                  key={idx} 
+                  title={section.title} 
+                  isOpen={expandedAccordion === idx}
+                  onClick={() => setExpandedAccordion(expandedAccordion === idx ? null : idx)}
+                >
+                  <ul className="space-y-3">
+                    {section.items.map((item, i) => (
+                      <li key={i} className="flex items-start gap-3 text-slate-700">
+                        <span className="text-[#2C5F7D] font-bold mt-1">✓</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionItem>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'function-based':
+        return (
+          <div className="animate-fade-in space-y-8">
+            <h2 className="text-3xl font-bold text-[#2C5F7D] pb-2 border-b-4 border-[#89C4D1]">General Function-Based Strategies (Tier 2)</h2>
+            <p className="text-slate-700">Strategies organized by function to be used when universal strategies aren't enough, but before a full FBA.</p>
+
+            <div className="space-y-8">
+              {/* Sensory */}
+              <div className="bg-white rounded-lg shadow border-l-8 border-purple-500 p-6">
+                <h3 className="text-2xl font-bold text-purple-700 mb-4 flex items-center gap-2">🌟 Sensory Strategies</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-2">Environment</h4>
+                    <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
+                      <li>Allow alternative seating (standing, ball chair)</li>
+                      <li>Reduce overwhelming stimuli (lights, noise)</li>
+                      <li>Create quiet corner/retreat</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-2">Proactive Needs</h4>
+                    <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
+                      <li>Provide sensory tools (fidgets, headphones)</li>
+                      <li>Heavy work activities (carrying books, wall push-ups)</li>
+                      <li>Movement breaks</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Escape */}
+              <div className="bg-white rounded-lg shadow border-l-8 border-red-500 p-6">
+                <h3 className="text-2xl font-bold text-red-700 mb-4 flex items-center gap-2">🚪 Escape Strategies</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-2">Instruction</h4>
+                    <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
+                      <li>Break assignments into smaller chunks</li>
+                      <li>Provide choice in order of tasks</li>
+                      <li>Allow alternate response modes (oral vs written)</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-2">Motivation</h4>
+                    <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
+                      <li>"First/Then" charts</li>
+                      <li>Allow use of "Break Card"</li>
+                      <li>Pair difficult task with preferred peer</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Attention */}
+              <div className="bg-white rounded-lg shadow border-l-8 border-orange-500 p-6">
+                <h3 className="text-2xl font-bold text-orange-700 mb-4 flex items-center gap-2">👥 Attention Strategies</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-2">Proactive</h4>
+                    <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
+                      <li>Greet student at door daily</li>
+                      <li>Provide non-contingent attention regularly</li>
+                      <li>Assign leadership roles</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-2">During Work</h4>
+                    <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
+                      <li>Frequent check-ins</li>
+                      <li>Praise nearby students to prompt behavior</li>
+                      <li>Ignore minor attention-seeking behaviors</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tangible */}
+              <div className="bg-white rounded-lg shadow border-l-8 border-green-500 p-6">
+                <h3 className="text-2xl font-bold text-green-700 mb-4 flex items-center gap-2">🎁 Tangible Strategies</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-2">Predictability</h4>
+                    <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
+                      <li>Use visual schedules for turns</li>
+                      <li>Use timers for preferred activities</li>
+                      <li>"Wait" cards</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-2">Teaching</h4>
+                    <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
+                      <li>Teach appropriate requesting</li>
+                      <li>Teach tolerating "No"</li>
+                      <li>Reinforce sharing and waiting</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'behaviors':
+        if (selectedBehavior) {
+          return <DetailView behavior={selectedBehavior} onClose={() => setSelectedBehavior(null)} />;
+        }
+        return (
+          <div className="animate-fade-in">
+            <h2 className="text-3xl font-bold text-[#2C5F7D] pb-2 border-b-4 border-[#89C4D1] mb-6">Function-Based Replacement Behavior & Supports</h2>
+            
+            <div className="relative mb-8">
+              <Search className="absolute left-3 top-3 text-slate-400" size={20} />
+              <input 
+                type="text"
+                placeholder="Search for a specific behavior (e.g., Aggression, Talking Out)..."
+                className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#4A90A4] shadow-sm text-lg"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            {filteredBehaviors.length === 0 ? (
+              <div className="text-center text-slate-500 py-12">No behaviors found matching your search.</div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredBehaviors.map(behavior => (
+                  <BehaviorCard 
+                    key={behavior.id}
+                    title={behavior.title}
+                    desc={behavior.desc}
+                    onClick={() => {
+                        setSelectedBehavior(behavior);
+                        window.scrollTo(0,0);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+            
+            <div className="mt-12 bg-yellow-50 border border-yellow-200 p-6 rounded-lg">
+              <h3 className="font-bold text-yellow-800 flex items-center gap-2 mb-2">
+                <ShieldAlert size={20} /> Important Note
+              </h3>
+              <p className="text-sm text-yellow-800">
+                It is recommended that Universal and General Function-based Strategies are attempted, and a Functional Behavior Assessment (FBA) is completed, prior to implementing Tier 3 intensive strategies.
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'evidence':
+        return (
+          <div className="animate-fade-in space-y-8">
+            <h2 className="text-3xl font-bold text-[#2C5F7D] pb-2 border-b-4 border-[#89C4D1]">Evidence-Based Practices</h2>
+            <p className="text-slate-700">The following practices have research support for effectiveness. Click the links to access training modules.</p>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {EVIDENCE_BASED_PRACTICES.map((practice, idx) => (
+                <a 
+                  key={idx} 
+                  href={practice.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block bg-white p-6 rounded-lg shadow-sm border border-slate-200 hover:shadow-md hover:border-[#4A90A4] transition-all group"
+                >
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-bold text-[#2C5F7D] group-hover:text-[#4A90A4] text-lg">{practice.name}</h3>
+                    <ExternalLink size={16} className="text-slate-400 group-hover:text-[#4A90A4]" />
+                  </div>
+                  <p className="text-slate-600 mt-2 text-sm">{practice.desc}</p>
+                </a>
+              ))}
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-[#2C5F7D] to-[#4A90A4] text-white shadow-lg sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold leading-tight">BCBA Behavior Intervention Tool</h1>
+              <p className="text-xs md:text-sm text-blue-100 opacity-90 hidden sm:block">Comprehensive Guide for Multi-Tiered Behavior Support</p>
+            </div>
+            
+            {/* Mobile Menu Button */}
+            <button 
+              className="md:hidden text-white p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-1 overflow-x-auto pb-0">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setSelectedBehavior(null);
+                  window.scrollTo(0,0);
+                }}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-4 whitespace-nowrap ${
+                  activeTab === tab.id 
+                    ? 'border-white text-white' 
+                    : 'border-transparent text-blue-100 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Mobile Navigation Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-[#244f68] border-t border-blue-800">
+             {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setMobileMenuOpen(false);
+                  setSelectedBehavior(null);
+                  window.scrollTo(0,0);
+                }}
+                className={`flex items-center gap-3 w-full px-4 py-3 text-left text-sm font-medium ${
+                  activeTab === tab.id 
+                    ? 'bg-blue-800 text-white' 
+                    : 'text-blue-100 hover:bg-blue-700'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-20">
+        {renderContent()}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-[#2C5F7D] text-white py-8 text-center mt-auto">
+        <div className="max-w-7xl mx-auto px-4">
+          <p className="font-bold text-lg">Behavior Intervention Strategies (BIS) Tool</p>
+          <p className="text-blue-200 text-sm mt-2">Idaho SESTA - Special Education Support & Technical Assistance</p>
+          <p className="text-blue-300 text-xs mt-4 max-w-2xl mx-auto">
+            This digital tool is designed to guide teams across the tiers of behavior support. 
+            Strategies should be individualized to student needs.
+          </p>
+        </div>
+      </footer>
+
+      {/* Back to Top Button */}
+      {showScrollTop && (
+        <button 
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 bg-[#4A90A4] hover:bg-[#2C5F7D] text-white p-3 rounded-full shadow-lg transition-all z-40 animate-bounce-subtle"
+          aria-label="Back to top"
+        >
+          <ArrowUp size={24} />
+        </button>
+      )}
+    </div>
+  );
+};
+
+export default App;
