@@ -99,6 +99,170 @@
         const GraduationCap = (props) => <Icon {...props}><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></Icon>;
 
         // --- Data ---
+        const FUNCTION_BASED_STRATEGIES = {
+            sensory: {
+                color: 'purple',
+                title: '🌟 Sensory Strategies',
+                sections: {
+                    "Environment": [
+                        "Allow students to adjust seating positions as needed (e.g., sitting vs. standing).",
+                        "Be mindful of sensory stimuli in the environment that may be overwhelming for some students (e.g., strong smells, lights, loud noises, too much posted on the walls, too many students in a group).",
+                        "Allow the student to move their seat away from an overwhelming or aversive stimulus.",
+                        "Allow the student to move their seat toward a preferred stimulus if it does not interfere with learning.",
+                        "Reduce distractions."
+                    ],
+                    "Predictability": [
+                        "Provide sensory support in a regular routine to maintain availability for learning throughout the day.",
+                        "Post the schedule for the day/period on the board.",
+                        "Provide an individual schedule or planner to track the schedule and/or assignments throughout the day.",
+                        "Provide a self-monitoring checklist.",
+                        "Change the student's class schedule, if needed."
+                    ],
+                    "Motivation": [
+                        "Provide reinforcement for tolerating non-preferred sensory stimuli.",
+                        "Provide opportunities to earn access to preferred sensory stimuli (e.g., music, swing, object).",
+                        "Provide a list of work that must be completed in the hour/period/day and let student choose the order and the reward for work completion."
+                    ],
+                    "Appropriate Instruction": [
+                        "Use multi-sensory instructional strategies.",
+                        "Adapt the length of the lesson.",
+                        "Use high interest lessons at the student's ability level."
+                    ],
+                    "Proactively Meet Students' Needs": [
+                        "Provide and allow students to access sensory support as needed and appropriate, during instruction or assignments to support learning (e.g., chair cushion, stretchy band around chair legs, wiggle seat, weighted lap pad, slant board, fidgets, noise canceling headphones).",
+                        "Provide an appropriate way for students to escape an overwhelming situation when needed (e.g., a quiet break space off to the side of the classroom), and then return to the task at hand.",
+                        "Provide opportunities for movement in between tasks.",
+                        "Provide large motor activities (e.g., walk on the playground before class, hang on the monkey bars, wall push-up, desk aerobics).",
+                        "Start the day with some floor calisthenics for students to get some deep pressure in their joints.",
+                        "Allow the student to run an errand involving heavy work (e.g., take a box of books to the library).",
+                        "Provide healthy snacks, if hungry.",
+                        "Provide a selection of neutral activities for students to choose from when bored or overwhelmed (e.g., drawing, classroom chore, stretching in the back of the classroom)."
+                    ]
+                }
+            },
+            escape: {
+                color: 'red',
+                title: '🚪 Escape Strategies',
+                sections: {
+                    "Environment": [
+                        "Allow the student to move their seat away from a non-preferred peer.",
+                        "Allow students to select groups to work in.",
+                        "Allow the student to work alone, if appropriate.",
+                        "Allow the student to work in another teacher's room, library, etc.",
+                        "Change the student's proximity to others as needed or appropriate (e.g., move to the front or back of the classroom).",
+                        "Reduce the number of students in a group during group work.",
+                        "Pair the student with a strong peer for support."
+                    ],
+                    "Predictability": [
+                        "Post the schedule for the day/period on the board.",
+                        "Provide an individual schedule or planner to track the schedule and/or assignments throughout the day.",
+                        "Provide a self-monitoring checklist.",
+                        "Change the student's class schedule, if needed.",
+                        "Schedule regular access to breaks throughout the day."
+                    ],
+                    "Motivation": [
+                        "Provide natural access to escape a difficult or non-preferred situation (e.g., calming space at the back of the classroom, homework pass).",
+                        "Establish contingencies with access to a preferred item or activity for completing non-preferred assignments and/or engaging in behavior consistent with schoolwide and classroom expectations.",
+                        "Provide feedback for effort.",
+                        "Create opportunities to get to know the student and build rapport.",
+                        "Develop work completion contract with access to reward/preferred activities for following the contract.",
+                        "Provide rewards for completing all assignments.",
+                        "Reinforce other students who are on task.",
+                        "Use behavioral momentum (e.g., begin with a preferred task or mastered task and slowly introduce novel or less-preferred tasks)."
+                    ],
+                    "Appropriate Instruction": [
+                        "Adapt the length of the lesson.",
+                        "Provide choice of activities or sequence of completion within the subject.",
+                        "Break assignments into smaller parts.",
+                        "Provide more challenging work.",
+                        "Ask the student what they think would be helpful to make work easier/more interesting.",
+                        "Change the level of task or number of demands.",
+                        "Simplify the task, reduce the difficulty, or shorten the length.",
+                        "Check student's work frequently for understanding.",
+                        "Draw a connection between the work and the student's life (e.g., college requirements, job responsibilities).",
+                        "Use high-interest lessons at the student's ability level.",
+                        "Allow the student to type or record their responses.",
+                        "Provide multiple choice assignments/assessments."
+                    ],
+                    "Proactively Meet Students' Needs": [
+                        "Maintain a safe classroom where it is okay to make mistakes.",
+                        "Encourage the student to write down their feelings.",
+                        "Provide pre-correction prior to potentially difficult situations by letting them know what is coming and review strategies that students can use in the moment.",
+                        "Provide an appropriate way for students to escape when needed (e.g., a quiet break space off to the side of the classroom) and then return to the task at hand.",
+                        "Provide a safe way for students to let the teacher know if they feel uncomfortable or need assistance with an assignment.",
+                        "Teach breathing/relaxation techniques to reduce tension.",
+                        "When a student requests escape, acknowledge as soon as possible and respond/mediate."
+                    ]
+                }
+            },
+            attention: {
+                color: 'orange',
+                title: '👥 Attention Strategies',
+                sections: {
+                    "Environment": [
+                        "Set up the classroom so that all parts of the classroom are visible and easily supervised.",
+                        "Walk around the room while students complete assignments to reinforce those who are on task, to provide help as needed, and to redirect any problem behavior."
+                    ],
+                    "Predictability": [
+                        "Establish communication procedures with parents/caregivers.",
+                        "Establish a routine for greeting students at the start of each day/period as a means for quick check-in and rapport building.",
+                        "Establish routines and procedures for working in pairs and/or small groups.",
+                        "Establish routines and procedures for how to access teacher help and/or attention."
+                    ],
+                    "Motivation": [
+                        "Provide each student with opportunities for recognition and leadership.",
+                        "Call parents/caregivers on good days to share student successes.",
+                        "Provide opportunities for students to socialize after completing assignments.",
+                        "Include the principal, counselor, or preferred adult in sharing the student's successes.",
+                        "Provide opportunities for students to be involved in the lesson (e.g., hold or pass out materials, lead a lesson or discussion).",
+                        "Allows students who finish work early to help other students.",
+                        "Assign class jobs on a rotational basis."
+                    ],
+                    "Appropriate Instruction": [
+                        "Ensure that work is presented at the appropriate level for the student.",
+                        "Provide the necessary support for the student to successfully access and engage in academic instruction.",
+                        "Provide opportunities for students to work in pairs or small groups."
+                    ],
+                    "Proactively Meet Students' Needs": [
+                        "Provide non-contingent individualized attention.",
+                        "Give time for students to socialize prior to beginning instruction.",
+                        "Encourage students to respond to other students' appropriate attempts for attention (e.g., greetings, telling jokes, initiating a conversation, sharing personal information such as what they did over the weekend or something cool going on in their life).",
+                        "Provide opportunities for each student to share their talents or interests with the class.",
+                        "Allow students to request counseling time.",
+                        "Ensure a 4:1 ratio of positive to corrective interactions."
+                    ]
+                }
+            },
+            tangible: {
+                color: 'green',
+                title: '🎁 Tangible/Access Strategies',
+                sections: {
+                    "Environment": [
+                        "Keep highly preferred items put away or out of reach.",
+                        "Provide a space in the classroom where students can finish breakfast/snack/lunch, if needed."
+                    ],
+                    "Predictability": [
+                        "Use a timer to structure access to preferred items.",
+                        "Post a daily schedule for the day/period that includes breaks/recesses and lunch."
+                    ],
+                    "Motivation": [
+                        "Provide opportunities for students to access preferred items, activities, etc. throughout the day.",
+                        "Allow students to access desired items/activities after assignments are completed.",
+                        "Provide access to a variety of novel items in the same category of other preferred items or activities (e.g., fidgets, snacks, pencils, stickers) to choose from."
+                    ],
+                    "Appropriate Instruction": [
+                        "Teach, model and practice how and when to appropriately request access to desired items/activities.",
+                        "Teach, model, and practice how to take turns and wait to access desired items/activities.",
+                        "Teach, model, and practice toleration of \"no\" or \"not right now\" in response to requests to access desired items/activities."
+                    ],
+                    "Proactively Meet Students' Needs": [
+                        "Acknowledge appropriate requests for items and provide access, if appropriate.",
+                        "Provide an opportunity for students to have a snack."
+                    ]
+                }
+            }
+        };
+
         const BEHAVIOR_DATA = {
             aggression: {
                 title: "💢 Aggression",
@@ -2089,104 +2253,49 @@
 
                 case 'function-based':
                     return (
-                    <div className="animate-fade-in space-y-8">
-                        <h2 className="text-3xl font-bold text-[#2C5F7D] pb-2 border-b-4 border-[#89C4D1]">General Function-Based Strategies (Tier 2)</h2>
-                        <p className="text-slate-700">Strategies organized by function to be used when universal strategies aren't enough, but before a full FBA.</p>
+                        <div className="animate-fade-in space-y-8">
+                            <h2 className="text-3xl font-bold text-[#2C5F7D] pb-2 border-b-4 border-[#89C4D1]">General Function-Based Strategies (Tier 2)</h2>
+                            <p className="text-slate-700">Strategies organized by function to be used when universal strategies aren't enough, but before a full FBA.</p>
 
-                        <div className="space-y-8">
-                        {/* Sensory */}
-                        <div className="bg-white rounded-lg shadow border-l-8 border-purple-500 p-6">
-                            <h3 className="text-2xl font-bold text-purple-700 mb-4 flex items-center gap-2">🌟 Sensory Strategies</h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <h4 className="font-bold text-slate-800 mb-2">Environment</h4>
-                                <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                                <li>Allow alternative seating (standing, ball chair)</li>
-                                <li>Reduce overwhelming stimuli (lights, noise)</li>
-                                <li>Create quiet corner/retreat</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-slate-800 mb-2">Proactive Needs</h4>
-                                <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                                <li>Provide sensory tools (fidgets, headphones)</li>
-                                <li>Heavy work activities (carrying books, wall push-ups)</li>
-                                <li>Movement breaks</li>
-                                </ul>
-                            </div>
-                            </div>
-                        </div>
+                            <div className="space-y-8">
+                                {Object.entries(FUNCTION_BASED_STRATEGIES).map(([key, data]) => {
+                                    const borderColorClass = `border-${data.color}-500`;
+                                    const textColorClass = `text-${data.color}-700`;
+                                    
+                                    // Use specific bg classes to ensure Tailwind compiles them if not using JIT fully or for clarity
+                                    let bgClass = "bg-white"; // default
+                                    if (key === 'sensory') bgClass = "bg-white border-l-8 border-purple-500";
+                                    if (key === 'escape') bgClass = "bg-white border-l-8 border-red-500";
+                                    if (key === 'attention') bgClass = "bg-white border-l-8 border-orange-500";
+                                    if (key === 'tangible') bgClass = "bg-white border-l-8 border-green-500";
 
-                        {/* Escape */}
-                        <div className="bg-white rounded-lg shadow border-l-8 border-red-500 p-6">
-                            <h3 className="text-2xl font-bold text-red-700 mb-4 flex items-center gap-2">🚪 Escape Strategies</h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <h4 className="font-bold text-slate-800 mb-2">Instruction</h4>
-                                <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                                <li>Break assignments into smaller chunks</li>
-                                <li>Provide choice in order of tasks</li>
-                                <li>Allow alternate response modes (oral vs written)</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-slate-800 mb-2">Motivation</h4>
-                                <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                                <li>"First/Then" charts</li>
-                                <li>Allow use of "Break Card"</li>
-                                <li>Pair difficult task with preferred peer</li>
-                                </ul>
-                            </div>
-                            </div>
-                        </div>
+                                    // Manually setting text colors for header because dynamic classes can be tricky
+                                    let headerTextColor = "text-slate-800";
+                                    if (key === 'sensory') headerTextColor = "text-purple-700";
+                                    if (key === 'escape') headerTextColor = "text-red-700";
+                                    if (key === 'attention') headerTextColor = "text-orange-700";
+                                    if (key === 'tangible') headerTextColor = "text-green-700";
 
-                        {/* Attention */}
-                        <div className="bg-white rounded-lg shadow border-l-8 border-orange-500 p-6">
-                            <h3 className="text-2xl font-bold text-orange-700 mb-4 flex items-center gap-2">👥 Attention Strategies</h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <h4 className="font-bold text-slate-800 mb-2">Proactive</h4>
-                                <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                                <li>Greet student at door daily</li>
-                                <li>Provide non-contingent attention regularly</li>
-                                <li>Assign leadership roles</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-slate-800 mb-2">During Work</h4>
-                                <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                                <li>Frequent check-ins</li>
-                                <li>Praise nearby students to prompt behavior</li>
-                                <li>Ignore minor attention-seeking behaviors</li>
-                                </ul>
-                            </div>
+                                    return (
+                                        <div key={key} className={`rounded-lg shadow p-6 ${bgClass}`}>
+                                            <h3 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${headerTextColor}`}>{data.title}</h3>
+                                            <div className="grid md:grid-cols-2 gap-x-8 gap-y-6">
+                                                {Object.entries(data.sections).map(([sectionTitle, items]) => (
+                                                    <div key={sectionTitle} className="break-inside-avoid">
+                                                        <h4 className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1">{sectionTitle}</h4>
+                                                        <ul className="list-disc pl-5 text-sm text-slate-700 space-y-1.5">
+                                                            {items.map((item, i) => (
+                                                                <li key={i}>{item}</li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
-
-                        {/* Tangible */}
-                        <div className="bg-white rounded-lg shadow border-l-8 border-green-500 p-6">
-                            <h3 className="text-2xl font-bold text-green-700 mb-4 flex items-center gap-2">🎁 Tangible Strategies</h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <h4 className="font-bold text-slate-800 mb-2">Predictability</h4>
-                                <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                                <li>Use visual schedules for turns</li>
-                                <li>Use timers for preferred activities</li>
-                                <li>"Wait" cards</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-slate-800 mb-2">Teaching</h4>
-                                <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                                <li>Teach appropriate requesting</li>
-                                <li>Teach tolerating "No"</li>
-                                <li>Reinforce sharing and waiting</li>
-                                </ul>
-                            </div>
-                            </div>
-                        </div>
-                        </div>
-                    </div>
                     );
 
                 case 'behaviors':
